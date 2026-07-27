@@ -192,6 +192,7 @@ async def health() -> dict[str, str]:
 async def chat_event(request: Request, background_tasks: BackgroundTasks) -> dict[str, Any]:
     event = await request.json()
     event_type, message = _classify(event)
+    log.info("raw_event", event=event)
 
     if event_type == "MESSAGE":
         # Slash command arrives with the command metadata on the message.
