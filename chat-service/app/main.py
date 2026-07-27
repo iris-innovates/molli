@@ -107,6 +107,17 @@ def _sender_email_from_event(event: dict[str, Any]) -> str:
     return str(user.get("email") or "")
 
 
+def _space_id_from_event(event: dict[str, Any]) -> str:
+    """Space resource name from the Chat API event envelope; 'unknown' if absent."""
+    chat = event.get("chat") or {}
+    for payload_key in ("messagePayload", "appCommandPayload", "buttonClickedPayload"):
+        space = (chat.get(payload_key) or {}).get("space") or {}
+        if space.get("name"):
+            return str(space["name"])
+    log.warning("space_id_unresolved")
+    return "unknown"
+
+
 def _test_values_for(request_type: str, sender_email: str) -> dict[str, str]:
     """Hardcoded collected values for the test triggers, standing in for a
     real field-collection step. Any real implementation should return the
@@ -192,7 +203,6 @@ async def health() -> dict[str, str]:
 async def chat_event(request: Request, background_tasks: BackgroundTasks) -> dict[str, Any]:
     event = await request.json()
     event_type, message = _classify(event)
-    log.info("raw_event", raw_event=event)
 
     if event_type == "MESSAGE":
         # Slash command arrives with the command metadata on the message.
@@ -204,7 +214,7 @@ async def chat_event(request: Request, background_tasks: BackgroundTasks) -> dic
         sender = message.get("sender", {})
         user_email = sender.get("email", "")
         user_name = sender.get("displayName", "")
-        space_id = event.get("space", {}).get("name", "unknown")
+        space_id = _space_id_from_event(event)
         session_id = message.get("name", "unknown")
 
         chain_result = await run_chain(user_text, user_email, space_id, session_id)
@@ -378,7 +388,7 @@ async def chat_event(request: Request, background_tasks: BackgroundTasks) -> dic
             params = common.get("parameters", {})
             user_email = params.get("userEmail", "") or _sender_email_from_event(event)
             user_question = params.get("userQuestion", "")
-            space_id = event.get("space", {}).get("name", "unknown")
+            space_id = _space_id_from_event(event)
             history = request.app.state.conversations.get_recent(space_id)
             analysis = await analyze_for_ticket(history, user_question)
             fields = analysis_to_draft_fields(analysis)
@@ -393,7 +403,7 @@ async def chat_event(request: Request, background_tasks: BackgroundTasks) -> dic
             params = common.get("parameters", {})
             user_email = params.get("userEmail", "") or _sender_email_from_event(event)
             user_question = params.get("userQuestion", "")
-            space_id = event.get("space", {}).get("name", "unknown")
+            space_id = _space_id_from_event(event)
             history = request.app.state.conversations.get_recent(space_id)
             analysis = await analyze_for_ticket(history, user_question)
             fields = analysis_to_draft_fields(analysis)
@@ -424,7 +434,7 @@ async def chat_event(request: Request, background_tasks: BackgroundTasks) -> dic
             return dialog.open_dialog(draft)
 
         if action == "resetHistory":
-            space_id = event.get("space", {}).get("name", "unknown")
+            space_id = _space_id_from_event(event)
             try:
                 request.app.state.conversations.clear(space_id)
                 log.info("conversation_reset", space_id=space_id)
