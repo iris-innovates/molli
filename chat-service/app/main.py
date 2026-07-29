@@ -208,10 +208,6 @@ async def chat_event(request: Request, background_tasks: BackgroundTasks) -> dic
     if event_type == "MESSAGE":
         # Slash command arrives with the command metadata on the message.
         user_text = message.get("text", "")
-        if user_text == "dialogtest":
-            resp = dialog.trigger_card()
-            log.info("outgoing_trigger_payload", payload=resp)
-            return resp
         if is_intro_query(user_text):
             log.info("intro_query_matched", text=user_text[:80])
             return _chat_reply(MOLLI_INTRO_MESSAGE)
