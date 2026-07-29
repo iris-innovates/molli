@@ -38,6 +38,7 @@ from app.cards.ticket_analysis_adapter import analysis_to_draft_fields
 from app.cards.ticket_mapper import build_ticket_payload
 from app.cards.ticket_prefill import create_ticket_button
 from app.gemini_client import FALLBACK_MESSAGE, ask_gemini
+from app.intro import MOLLI_INTRO_MESSAGE, is_intro_query
 from app.tools.rag_answer import answer_with_citations, search_docs
 
 
@@ -211,6 +212,9 @@ async def chat_event(request: Request, background_tasks: BackgroundTasks) -> dic
             resp = dialog.trigger_card()
             log.info("outgoing_trigger_payload", payload=resp)
             return resp
+        if is_intro_query(user_text):
+            log.info("intro_query_matched", text=user_text[:80])
+            return _chat_reply(MOLLI_INTRO_MESSAGE)
         sender = message.get("sender", {})
         user_email = sender.get("email", "")
         user_name = sender.get("displayName", "")
