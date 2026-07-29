@@ -15,6 +15,8 @@ by that timeout before it could help, so they're left as-is.
 
 from __future__ import annotations
 
+from typing import Callable, ParamSpec, TypeVar
+
 from google.api_core.exceptions import ResourceExhausted
 from tenacity import (
     retry,
@@ -23,9 +25,20 @@ from tenacity import (
     wait_exponential,
 )
 
-vertex_retry = retry(
-    retry=retry_if_exception_type(ResourceExhausted),
-    stop=stop_after_attempt(3),
-    wait=wait_exponential(multiplier=1, min=1, max=8),
-    reraise=True,
-)
+_P = ParamSpec("_P")
+_R = TypeVar("_R")
+
+
+# A plain `vertex_retry = retry(...)` module-level assignment loses its
+# generic signature to mypy entirely (the TypeVar in tenacity's overload
+# collapses to Any at the assignment). This explicit ParamSpec-based wrapper
+# is more precise, but callers still need a `# type: ignore[untyped-decorator]`
+# on each use -- across this workspace's package layout, mypy still discards
+# the inferred signature at the `@vertex_retry` call site itself.
+def vertex_retry(func: Callable[_P, _R]) -> Callable[_P, _R]:
+    return retry(
+        retry=retry_if_exception_type(ResourceExhausted),
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, min=1, max=8),
+        reraise=True,
+    )(func)

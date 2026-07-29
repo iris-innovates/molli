@@ -33,15 +33,14 @@ variable "environment" {
   description = "dev or prod"
 }
 
-# Modules wired up in Phase 0:
-# - APIs to enable (run, aiplatform, secretmanager, firestore, scheduler, cloudbuild, artifactregistry)
+# Resources already provisioned manually (not yet captured as Terraform
+# resources below):
+# - APIs enabled (run, aiplatform, secretmanager, firestore, scheduler, cloudbuild, artifactregistry)
 # - Service accounts (chat-service runtime, sync-job runtime, ci-deploy)
 # - Secret Manager secrets (empty versions; values created manually)
 # - Artifact Registry repo
 # - Firestore database
 # - Workload Identity Federation for GitHub Actions
-
-# To be added in Phase 1:
 # - Vertex AI Vector Search index + endpoint
 # - Cloud Scheduler job
 # - Cloud Run service + job

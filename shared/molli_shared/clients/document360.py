@@ -1,13 +1,11 @@
 """Document360 API client.
 
-Phase 1 implementation: enumerate the content tree, list article stubs, fetch
-full article content, and support incremental sync via a stored modified-at
-watermark.
+Enumerates the content tree, lists article stubs, fetches full article
+content, and supports incremental sync via a stored modified-at watermark.
 
 API docs: https://apidocs.document360.io/
 
-Design notes (confirmed against the live Preiss Central instance during the
-Sprint 1 exploration — see docs/spikes/document360-api.md)
+Design notes (confirmed against the live Preiss Central instance)
 -------------------------------------------------------------------------------
 - Auth is a custom header: ``api_token: <key>`` (NOT ``Authorization: Bearer``).
 - Base URL is region-specific. Preiss Central is on the US region:
@@ -28,7 +26,7 @@ Sprint 1 exploration — see docs/spikes/document360-api.md)
 
 Indexing filter: only ``status == 3`` (published) AND ``not hidden`` articles
 should be indexed. ``security_visibility`` semantics are still unconfirmed and
-are NOT filtered on yet (see schema TODO).
+are NOT filtered on.
 
 Typical sync usage::
 

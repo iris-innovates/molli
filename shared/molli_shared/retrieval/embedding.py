@@ -59,7 +59,7 @@ class Embedder:
                 vectors.append(list(r.values))
         return vectors
 
-    @vertex_retry
+    @vertex_retry  # type: ignore[untyped-decorator]
     def _get_embeddings(self, inputs: list[TextEmbeddingInput]) -> list[Any]:
         return self._model.get_embeddings(cast(list[str | TextEmbeddingInput], inputs))
 

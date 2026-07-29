@@ -1,25 +1,21 @@
-"""Test factory for ``TicketDraft`` — input-side analogue of MockTicketingProvider.
+"""Test/dev factory for building ``TicketDraft`` objects.
 
-Stands in for the draft that Kautilya's confidence/fallback path will emit, so
-the dialog pre-fill flow (open dialog -> widgets carry ``value`` from the draft
--> user edits inline -> submit) can be built and tested end-to-end without his
-code existing yet.
-
-Integration later is a source swap: replace ``make_draft()`` with the real
-draft coming off the fallback signal. As long as both honor the ``TicketDraft``
-schema, nothing downstream changes.
+Lets the dialog pre-fill flow (open dialog -> widgets carry ``value`` from the
+draft -> user edits inline -> submit) be built and tested end-to-end against a
+realistic draft, independent of whatever produces a real draft from Molli's
+confidence/fallback path.
 
 Design notes:
-- Every editable field is wrapped in ``FieldConfidence`` exactly as the real
-  draft will be, so the pre-fill code reads ``.value`` uniformly.
+- Every editable field is wrapped in ``FieldConfidence`` exactly as a real
+  draft would be, so the pre-fill code reads ``.value`` uniformly.
 - ``make_draft`` defaults to a complete, high-confidence IT-scenario draft.
 - Helpers cover the cases the dialog has to survive: a field Molli couldn't
   propose (``value=None`` -> widget shows empty), and a fully empty draft
   (only the never-user-editable Molli fields set).
 - ``original_more_detail`` is set to "Other" here so a factory draft round-trips
-  cleanly through ``to_payload()``. If the decision is that YOUR handler injects
-  it as an override instead, drop it from the draft (see ``include_more_detail``)
-  and confirm Kautilya does the same — that's the open contract question.
+  cleanly through ``to_payload()``. Pass ``include_more_detail=False`` to drop
+  it from the draft instead, for testing a caller that injects it as an
+  override.
 """
 
 from __future__ import annotations

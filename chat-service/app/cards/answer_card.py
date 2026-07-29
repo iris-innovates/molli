@@ -16,8 +16,6 @@ from __future__ import annotations
 
 from typing import Any
 
-import structlog
-
 from .text import md_to_chat_html  # adjust import to match your package layout
 
 __all__ = ["answer_card", "answer_message"]
@@ -48,8 +46,6 @@ def answer_card(
         One element suitable for the ``cardsV2`` list of a Chat message.
     """
     html = md_to_chat_html(markdown_text)
-    log = structlog.get_logger()
-    log.info("card_text_html", html=html)
     widgets: list[dict[str, Any]] = [{"textParagraph": {"text": html}}]
 
     # --- Reserved for later; content-driven so the path stays single. ---

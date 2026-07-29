@@ -14,9 +14,9 @@ Two related model groups live here:
 Field names match Freshservice's API exactly. Do not rename for stylistic
 consistency; the API rejects unknown keys.
 
-When adding new fields to ``MolliCustomFields``, confirm with Adam that the
-custom field has been provisioned in Freshservice first. Sending an unknown
-``custom_fields`` key returns a 400 from the API.
+When adding new fields to ``MolliCustomFields``, confirm the custom field has
+been provisioned in Freshservice first. Sending an unknown ``custom_fields``
+key returns a 400 from the API.
 """
 
 from __future__ import annotations
@@ -79,16 +79,16 @@ class DraftIncompleteError(ValueError):
 class MolliCustomFields(BaseModel):
     """Custom fields on Preiss's Freshservice ticket schema.
 
-    Required for every ticket Molli creates (per Adam, Sprint 1):
+    Required for every ticket Molli creates:
         original_system, original_more_detail, msf_affected_location.
 
     Conditionally required:
         computer_name_if_it_issue — when original_system is IT-related.
         Chat-service resolves from Workspace Admin SDK when available.
 
-    Molli-specific traceability fields require provisioning by Adam in
-    Freshservice admin before they can be set. Until then they remain
-    ``None`` and are stripped at serialization time.
+    Molli-specific traceability fields require provisioning in the
+    Freshservice admin console before they can be set. Until then they
+    remain ``None`` and are stripped at serialization time.
     """
 
     model_config = ConfigDict(extra="forbid")

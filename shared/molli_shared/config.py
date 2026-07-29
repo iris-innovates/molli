@@ -42,7 +42,6 @@ class Settings(BaseModel):
     # When set, HR/OSHA/HR_LEGAL escalations POST a notification to this space.
     hr_escalation_webhook_url: str | None = None
 
-
     @property
     def freshservice_base_url(self) -> str:
         """Full base URL for Freshservice API.

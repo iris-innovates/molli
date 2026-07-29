@@ -3,10 +3,9 @@
 Detects harassment, discrimination, retaliation, and hostile work environment
 disclosures. Per the High-Risk Conversation Governance Framework (2026):
 
-  - Route to Sally Sousa (HR) ONLY
+  - Route to HR ONLY
   - Never alert or involve the employee's direct manager
   - Do not investigate or interpret the disclosure
-  - Auto-create a Freshservice ticket (Phase 1 — not yet wired)
   - Provide anonymous tip option in canned response
 
 Action: ESCALATE — return confidential intake canned response.

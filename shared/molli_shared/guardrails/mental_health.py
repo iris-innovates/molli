@@ -1,12 +1,11 @@
 """Mental Health guardrail.
 
-Detects explicit distress, implicit distress, and crisis terminology.
-Uses keyword matching as first pass; delegates ambiguous cases to a
-Gemini classification call (stubbed here — wire in Phase 2 tuning).
+Detects explicit distress, implicit distress, and crisis terminology via
+keyword/regex matching only — there is no LLM fallback for ambiguous cases.
 
 Action: ESCALATE — return EAP canned response, do not answer any other
 part of the message. EAP contact block is loaded from config so it can
-be updated without a redeploy (pending Sally Sousa confirmation).
+be updated without a redeploy.
 """
 
 from __future__ import annotations
@@ -19,7 +18,7 @@ from molli_shared.config import get_secret, get_settings
 from .base import Action, GuardrailVerdict
 
 # ---------------------------------------------------------------------------
-# Trigger pattern sets — from guardrails-design.md §1
+# Trigger pattern sets
 # ---------------------------------------------------------------------------
 
 _EXPLICIT_PATTERNS: list[str] = [

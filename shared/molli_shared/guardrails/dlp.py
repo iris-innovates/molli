@@ -24,11 +24,8 @@ Usage:
 
 from __future__ import annotations
 
-import logging
 from dataclasses import dataclass, field
 from typing import Any, Optional
-
-logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Default infoType set — covers the PII most likely to appear in employee chat.
@@ -107,17 +104,11 @@ class DLPScanner:
 
         if len(text.encode("utf-8")) > MAX_BYTES:
             text = text[: MAX_BYTES // 2]  # trim; keeps the message usable
-            logger.warning("DLP: input truncated to %d chars before scan", len(text))
 
         try:
             client = self._get_client()
             return self._call_dlp(client, text)
         except Exception as exc:  # noqa: BLE001
-            logger.error(
-                "DLP scan failed — failing open. PII may reach Gemini. error=%s",
-                exc,
-                exc_info=True,
-            )
             return DLPResult(
                 original_text=text,
                 redacted_text=text,
@@ -189,14 +180,6 @@ class DLPScanner:
 
         redacted = response.item.value
         has_pii = redacted != text  # text changed → something was redacted
-
-        if has_pii:
-            logger.info(
-                "DLP: PII detected and redacted. infoTypes=%s",
-                found_types or ["(types unavailable in overview)"],
-            )
-        else:
-            logger.debug("DLP: no PII detected.")
 
         return DLPResult(
             original_text=text,

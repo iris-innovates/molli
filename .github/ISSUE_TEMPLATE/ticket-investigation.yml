@@ -17,8 +17,8 @@ body:
     id: sme
     attributes:
       label: SME contact(s)
-      description: From the kickoff deck slide 12.
-      placeholder: e.g. Lane Sheer, Toni Yrlas
+      description: Who has direct knowledge of this department's workflows?
+      placeholder: e.g. Jane Doe, John Smith
     validations:
       required: true
   - type: checkboxes
@@ -31,13 +31,13 @@ body:
         - label: Interview SME(s) to validate clusters and surface undocumented knowledge
         - label: For each cluster, mark Molli-resolvable vs needs-human, and exists-in-D360 vs needs-new-content
         - label: Tag any clusters with guardrail relevance (FCRA, FHA, OSHA, MH)
-        - label: Add findings to `docs/ticket-investigation.md` under the department section
+        - label: Add findings to `docs/ticket-investigation.md (create if missing)` under the department section
   - type: textarea
     id: deliverable
     attributes:
       label: Deliverable
       value: |
-        Findings added to `docs/ticket-investigation.md`, including:
+        Findings added to `docs/ticket-investigation.md (create if missing)`, including:
         - Top 10 clusters with example subjects
         - % estimated resolvable by Molli
         - List of D360 articles to create or improve

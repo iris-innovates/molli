@@ -39,9 +39,7 @@ _SYSTEM_PROMPT = (
     "not new topics."
 )
 
-_USER_TEMPLATE = (
-    "Recent conversation:\n{history}\n\n" "New message: {query}\n\n" "Answer:"
-)
+_USER_TEMPLATE = "Recent conversation:\n{history}\n\nNew message: {query}\n\nAnswer:"
 
 
 def _call_gemini(
@@ -88,7 +86,6 @@ async def detect_topic_change(query: str, history: str) -> bool:
             timeout=_DETECTION_TIMEOUT,
         )
     except asyncio.TimeoutError:
-        log.warning("topic_detection_timeout", query_len=len(query))
         return False
     except Exception as exc:  # noqa: BLE001
         log.error("topic_detection_error", error=str(exc))

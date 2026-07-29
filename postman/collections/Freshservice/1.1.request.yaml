@@ -1,5 +1,0 @@
-$kind: http-request
-name: "1.1"
-url: "{{base_url}}/ticket_form_fields"
-method: GET
-order: 2089286329611176

@@ -25,11 +25,12 @@ and never blocks the event loop.
 from __future__ import annotations
 
 import base64
-import logging
 from email.mime.text import MIMEText
 from typing import Any
 
-log = logging.getLogger(__name__)
+import structlog
+
+log = structlog.get_logger()
 
 _GMAIL_SEND_SCOPE = "https://www.googleapis.com/auth/gmail.send"
 
@@ -60,15 +61,15 @@ class GmailClient:
                 scopes=["https://www.googleapis.com/auth/iam"]
             )
             http_request = google.auth.transport.requests.Request()
-            source_creds.refresh(http_request)
+            source_creds.refresh(http_request)  # type: ignore[no-untyped-call]
 
             # Sign JWTs via IAM API (requires iam.serviceAccounts.signJwt on the SA).
-            signer = iam.Signer(
+            signer = iam.Signer(  # type: ignore[no-untyped-call]
                 request=http_request,
                 credentials=source_creds,
                 service_account_email=self._service_account_email,
             )
-            creds = service_account.Credentials(
+            creds = service_account.Credentials(  # type: ignore[no-untyped-call]
                 signer=signer,
                 service_account_email=self._service_account_email,
                 token_uri="https://oauth2.googleapis.com/token",
@@ -76,7 +77,9 @@ class GmailClient:
                 subject=self._sender_email,  # DWD: act as this Workspace user
             )
             # cache_discovery=False avoids a filesystem write in Cloud Run.
-            self._service = build("gmail", "v1", credentials=creds, cache_discovery=False)
+            self._service = build(
+                "gmail", "v1", credentials=creds, cache_discovery=False
+            )
         return self._service
 
     def send_email(self, *, to: str, subject: str, body: str) -> None:

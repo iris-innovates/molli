@@ -13,6 +13,8 @@ from app.tools.rag_answer import (
     Citation,
     RagAnswer,
     _build_prompt,
+    _extract_cited_numbers,
+    _strip_citation_markers,
     answer_with_citations,
 )
 from molli_shared.chunk_store import StoredChunk
@@ -74,3 +76,19 @@ def test_empty_query_returns_no_context() -> None:
     ans = answer_with_citations("   ")
     assert ans.no_context is True
     assert ans.citations == []
+
+
+def test_extract_cited_numbers_reads_single_and_grouped_markers() -> None:
+    text = "Reset it here [1]. Also see the FAQ [2, 3] for more."
+    assert _extract_cited_numbers(text) == {1, 2, 3}
+
+
+def test_extract_cited_numbers_empty_when_no_markers() -> None:
+    assert _extract_cited_numbers("Just a plain answer with no markers.") == set()
+
+
+def test_strip_citation_markers_removes_brackets_and_tidies_punctuation() -> None:
+    text = "Reset it here [1]. Also see the FAQ [2, 3] for more."
+    out = _strip_citation_markers(text)
+    assert "[1]" not in out and "[2, 3]" not in out
+    assert out == "Reset it here. Also see the FAQ for more."

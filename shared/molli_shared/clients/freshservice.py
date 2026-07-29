@@ -1,7 +1,5 @@
 """Freshservice implementation of the TicketingProvider protocol.
 
-Promotes the Postman/spike findings into production code:
-
 - Auth: HTTP Basic with API key as username, "X" as password.
 - Base URL: per-tenant Freshservice hostname (NOT the support portal domain
   — that's UI-only). For Preiss, this is
@@ -17,13 +15,12 @@ validation problem the chat-service can surface immediately.
 
 Tests live in ``shared/tests/test_freshservice_client.py`` and mock all
 HTTP. No tests touch the live API. The Postman collection in
-``docs/spikes/`` is the manual integration-test surface.
+``postman/`` is the manual integration-test surface.
 """
 
 from __future__ import annotations
 
 import asyncio
-import logging
 import random
 from typing import Any
 
@@ -40,8 +37,6 @@ from molli_shared.schemas.ticket import (
     RequesterRecord,
     TicketCreatePayload,
 )
-
-logger = logging.getLogger(__name__)
 
 
 class FreshserviceClient:
@@ -157,11 +152,6 @@ class FreshserviceClient:
 
             # Auth — terminal, no retry
             if status in (401, 403):
-                logger.warning(
-                    "Freshservice auth failure: status=%s body=%r",
-                    status,
-                    body_preview,
-                )
                 raise TicketingAuthError(
                     f"Freshservice rejected credentials ({status}): {body_preview}",
                     status_code=status,
@@ -172,11 +162,6 @@ class FreshserviceClient:
             if status == 429:
                 if attempt < self._max_retries:
                     wait = self._wait_for_retry_after(response, attempt)
-                    logger.info(
-                        "Freshservice 429; backing off %.2fs (attempt %d)",
-                        wait,
-                        attempt + 1,
-                    )
                     await asyncio.sleep(wait)
                     continue
                 raise TicketingRateLimitError(
@@ -198,12 +183,6 @@ class FreshserviceClient:
             if status >= 500:
                 if attempt < self._max_retries:
                     wait = self._backoff(attempt)
-                    logger.warning(
-                        "Freshservice %s; retrying in %.2fs (attempt %d)",
-                        status,
-                        wait,
-                        attempt + 1,
-                    )
                     await asyncio.sleep(wait)
                     continue
                 raise TicketingError(

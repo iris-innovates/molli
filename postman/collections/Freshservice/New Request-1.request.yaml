@@ -1,5 +1,0 @@
-$kind: http-request
-name: New Request
-url: "{{base_url}}/tickets/87042"
-method: DELETE
-order: 3667594091053196

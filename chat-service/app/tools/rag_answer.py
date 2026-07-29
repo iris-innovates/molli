@@ -1,17 +1,15 @@
 """RAG answer pipeline: retrieve D360 chunks, ground Gemini on their text, cite.
 
-This is the heart of Phase 1 and the kickoff DoD line:
-"responses sourced directly from Document360 with citation links."
-
 Flow:
     query -> embed (RETRIEVAL_QUERY) -> Vector Search top-k neighbour ids
           -> ChunkStore.get_many(ids) -> actual chunk text
           -> build grounded prompt with numbered sources (text + link)
-          -> Gemini generates an answer with NO inline citation markers --
-             the numbering in the prompt is only to help Gemini tell sources
-             apart, not something it should surface to the user
-          -> assemble a deduplicated citation list (title + D360 URL),
-             appended as a plain hyperlinked "Sources:" list
+          -> Gemini generates an answer, citing inline as [1], [2] only the
+             sources it actually drew from
+          -> the [n] markers are parsed to filter the citation list down to
+             sources actually used, then stripped so the user-facing text
+             reads as plain prose -- a deduplicated citation list (title +
+             D360 URL) is appended as a hyperlinked "Sources:" list
 
 No-context handling: Vector Search always returns top-k neighbours even for an
 off-topic query, so an empty result set is NOT a reliable "not covered" signal.
@@ -28,6 +26,7 @@ Design choices:
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 
 import structlog
@@ -55,10 +54,12 @@ RAG_SYSTEM_INSTRUCTION = (
     "prompt. Rules:\n"
     "1. Base your answer only on the provided source text. Do not use outside "
     "knowledge about Preiss's internal systems, policies, or people.\n"
-    "2. Do not cite sources inline and do not add any bracketed numbers, "
-    "footnotes, or markers like [1] to your answer -- a linked source list is "
-    "appended automatically after your answer, so just write the answer as "
-    "plain, natural text.\n"
+    "2. Whenever a claim in your answer relies on a specific source, cite it "
+    "inline right after that claim with a bracketed number like [1] or [2]. "
+    "Only cite sources you actually drew from -- never cite a source just "
+    "because it was provided, and never cite a source for a claim it doesn't "
+    "support. These markers are stripped out and replaced with a linked "
+    "source list automatically, so don't worry about how they read.\n"
     "3. If the provided sources do not actually answer the question, respond "
     "with EXACTLY the single token INSUFFICIENT_CONTEXT and nothing else -- no "
     "explanation, no apology, no citations. Do not fabricate.\n"
@@ -93,9 +94,9 @@ class RagAnswer:
     def formatted(self) -> str:
         """Answer text with a Sources footer of working D360 links.
 
-        No numbering anywhere -- the answer body has no inline markers (the
-        model is instructed not to add them) and each source is just its
-        hyperlinked title.
+        No numbering anywhere -- inline [n] markers are stripped from the
+        answer body before it reaches here (see answer_with_citations), and
+        each source is just its hyperlinked title.
         """
         if not self.citations:
             return self.text
@@ -123,7 +124,7 @@ def _get_model() -> GenerativeModel:
     return _model
 
 
-@vertex_retry
+@vertex_retry  # type: ignore[untyped-decorator]
 def _generate(model: GenerativeModel, prompt: str, temperature: float) -> GenerationResponse:
     return model.generate_content(
         prompt, generation_config=GenerationConfig(temperature=temperature)
@@ -145,6 +146,26 @@ def _get_retrieval() -> tuple[Embedder, VectorIndex, ChunkStore]:
         )
         _store = ChunkStore(settings.gcp_project_id, settings.firestore_database)
     return _embedder, _index, _store
+
+
+_CITATION_MARKER_RE = re.compile(r"\[(\d+(?:\s*,\s*\d+)*)\]")
+
+
+def _extract_cited_numbers(text: str) -> set[int]:
+    """Pull the source numbers Gemini actually cited, e.g. {1, 3} from "...[1] ... [3]"."""
+    numbers: set[int] = set()
+    for match in _CITATION_MARKER_RE.finditer(text):
+        for part in match.group(1).split(","):
+            numbers.add(int(part.strip()))
+    return numbers
+
+
+def _strip_citation_markers(text: str) -> str:
+    """Remove [n] / [n, m] markers and tidy the whitespace/punctuation left behind."""
+    stripped = _CITATION_MARKER_RE.sub("", text)
+    stripped = re.sub(r"[ \t]+([.,;:!?])", r"\1", stripped)
+    stripped = re.sub(r"[ \t]{2,}", " ", stripped)
+    return stripped.strip()
 
 
 def _build_prompt(
@@ -172,11 +193,10 @@ def _build_prompt(
         f"Employee question: {query}\n\n"
         f"Numbered sources from Preiss Central (Document360):\n\n"
         f"{sources_text}\n\n"
-        f"Answer using only these sources. The numbering above is only to "
-        f"help you tell sources apart -- do not mention source numbers or "
-        f"add bracketed markers like [1] in your answer. If these sources do "
-        f"not actually answer the question, reply with exactly "
-        f"{_INSUFFICIENT} and nothing else."
+        f"Answer using only these sources, citing inline like [1] right after "
+        f"any claim that depends on a specific source -- cite only sources "
+        f"you actually used. If these sources do not actually answer the "
+        f"question, reply with exactly {_INSUFFICIENT} and nothing else."
     )
     return prompt, citations
 
@@ -194,11 +214,8 @@ def answer_with_citations(
 
     # intent is accepted for forward-compatibility: once a D360
     # category->department map exists, retrieval will soft-boost chunks whose
-    # category matches the predicted department. Until then it is logged but
-    # NOT applied -- retrieval stays unscoped so a wrong intent can't hide the
-    # right answer. See docs/spikes/intent-classification.md.
-    if intent:
-        log.info("rag_intent_hint", intent=intent)
+    # category matches the predicted department. Until then it is unused --
+    # retrieval stays unscoped so a wrong intent can't hide the right answer.
 
     try:
         embedder, index, store = _get_retrieval()
@@ -244,12 +261,17 @@ def answer_with_citations(
         log.info("rag_insufficient_context", query=query)
         return RagAnswer(text=NO_CONTEXT_MESSAGE, no_context=True, chunks_retrieved=len(neighbours))
 
-    # The model no longer emits inline [n] markers, so there's nothing in the
-    # generated text to match citations against -- surface every retrieved,
-    # deduplicated source.
+    # Keep only the sources the model actually cited inline; if it didn't tag
+    # anything (prompt drift, model quirk) fall back to the full retrieved
+    # set rather than showing an answer with no sources at all.
+    cited_numbers = _extract_cited_numbers(text)
+    final_citations = [c for c in citations if c.number in cited_numbers] or citations
+    if citations and not cited_numbers:
+        log.info("rag_no_inline_citations", query=query)
+
     return RagAnswer(
-        text=text,
-        citations=citations,
+        text=_strip_citation_markers(text),
+        citations=final_citations,
         chunks_retrieved=len(neighbours),
     )
 

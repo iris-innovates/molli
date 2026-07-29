@@ -1,8 +1,9 @@
 """Tests for the FairHousingGuardrail.
 
 Covers:
-- FHA trigger patterns (screening criteria, adverse action, protected classes)
-- FCRA is handled in test_fcra.py — not tested here
+- FHA trigger patterns (protected classes, tenant decision language)
+- Screening/credit/adverse-action language is intentionally excluded here and
+  handled by FCRAGuardrail instead — see test_fcra.py
 - Exclusion patterns (Grace Hill, job screening interviews)
 - Normal messages that should pass through
 """
@@ -25,27 +26,6 @@ guardrail = FairHousingGuardrail()
 
 
 @pytest.mark.asyncio
-async def test_blocks_screening_criteria():
-    verdict = await guardrail.check(
-        "what are the screening criteria for applicants?", USER
-    )
-    assert verdict.action == Action.BLOCK
-    assert verdict.category == "FAIR_HOUSING"
-
-
-@pytest.mark.asyncio
-async def test_blocks_adverse_action():
-    verdict = await guardrail.check("how do I write an adverse action letter?", USER)
-    assert verdict.action == Action.BLOCK
-
-
-@pytest.mark.asyncio
-async def test_blocks_applicant_denial():
-    verdict = await guardrail.check("what's the process for applicant denial?", USER)
-    assert verdict.action == Action.BLOCK
-
-
-@pytest.mark.asyncio
 async def test_blocks_fair_housing_direct():
     verdict = await guardrail.check("can you explain the fair housing rules?", USER)
     assert verdict.action == Action.BLOCK
@@ -64,14 +44,8 @@ async def test_blocks_deny_applicant():
 
 
 @pytest.mark.asyncio
-async def test_blocks_denial_letter():
-    verdict = await guardrail.check("where do I find a denial letter template?", USER)
-    assert verdict.action == Action.BLOCK
-
-
-@pytest.mark.asyncio
 async def test_canned_response_is_set():
-    verdict = await guardrail.check("what are the screening criteria?", USER)
+    verdict = await guardrail.check("can we reject an applicant based on race?", USER)
     assert verdict.canned_response is not None
     assert "HR" in verdict.canned_response
 
@@ -153,6 +127,21 @@ async def test_blocks_source_of_income():
 @pytest.mark.asyncio
 async def test_allows_grace_hill():
     verdict = await guardrail.check("how do I access Grace Hill training?", USER)
+    assert verdict.action == Action.ALLOW
+
+
+@pytest.mark.asyncio
+async def test_allows_screening_criteria():
+    # Screening/adverse-action language is FCRA territory, not FHA — see test_fcra.py.
+    verdict = await guardrail.check(
+        "what are the screening criteria for applicants?", USER
+    )
+    assert verdict.action == Action.ALLOW
+
+
+@pytest.mark.asyncio
+async def test_allows_adverse_action_letter():
+    verdict = await guardrail.check("how do I write an adverse action letter?", USER)
     assert verdict.action == Action.ALLOW
 
 

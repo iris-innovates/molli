@@ -26,7 +26,7 @@ class RequestField:
 class RequestSpec:
     request_type: str  # stable id, used for routing/triggers
     title: str  # header line in the Description body
-    group_id: int  # Freshservice group — CONFIRM values with Adam
+    group_id: int  # Freshservice group id
     subject_template: str  # str.format() against collected values
     fields: tuple[RequestField, ...]
 

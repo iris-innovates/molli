@@ -1,8 +1,0 @@
-$kind: http-request
-name: New Request
-url: "{{base_url}}/Articles/1f85e3c1-6db2-4d71-94f9-313d10c48e90/en"
-method: GET
-headers:
-  accept: " application/json"
-  api_token: 4zQb4CANpr262emWjhsn5kKuiupiBxxCBw8rsHJHfsVmeG1lR0lJ2NcSJTcCD2DZBbNywL1EaG0kFAegLzluoFo48HEr+zjK+WexTDCw3v25HEYjIrLWHPJmP1UwsIVlyZzM5QSDNU/oLMSMPAZRXw==
-order: 1780674970346

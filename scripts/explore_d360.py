@@ -1,9 +1,8 @@
 """
 Document360 API exploration script.
 
-Purpose: empirically answer the questions in docs/spikes/document360-api.md
-once the API key is available. Run end-to-end Monday, paste outputs into
-the spike doc, then open a PR.
+Purpose: empirically answer questions about the live Document360 API surface
+(auth, pagination, rate limits) by exercising it directly.
 
 Usage:
     # one-time setup (from repo root, if not already done)
@@ -22,8 +21,6 @@ Notes:
       That file should be rewritten using whatever this script teaches us.
     - Rate-limit probe (section 5) deliberately hammers the API. Run it last
       and only once. Skip with --skip-rate-limit if you're iterating.
-
-Author: Vedant, Sprint 1
 """
 
 from __future__ import annotations

@@ -1,16 +1,16 @@
 """
 Freshservice API exploration script.
 
-Purpose: empirically answer the questions in docs/spikes/freshservice-api.md
-once the API key is available. Read-only operations first; create-then-delete
-cycles last, with hard-coded safety rails so the script cannot produce stray
-tickets in production.
+Purpose: empirically answer questions about the live Freshservice API surface
+(auth, required fields, rate limits) by exercising it directly. Read-only
+operations first; create-then-delete cycles last, with hard-coded safety
+rails so the script cannot produce stray tickets in production.
 
-Per Adam (Sprint 1 ticket prep):
+Notes:
     - No sandbox available; this targets the live Preiss Freshservice instance.
     - Every test ticket subject is prefixed [TEST-Molli].
     - Required fields on every ticket: email, system, issue.
-    - Tickets are deleted immediately after creation in the spike.
+    - Tickets are deleted immediately after creation.
 
 Usage:
     # one-time setup
@@ -24,11 +24,9 @@ Usage:
     FRESHSERVICE_API_KEY=<key> FRESHSERVICE_DOMAIN=<domain> \\
         uv run python scripts/explore_freshservice.py --section fields
 
-    # to skip the write sections entirely (Adam not online to watch, etc.)
+    # to skip the write sections entirely
     FRESHSERVICE_API_KEY=<key> FRESHSERVICE_DOMAIN=<domain> \\
         uv run python scripts/explore_freshservice.py --read-only
-
-Author: Vedant, Sprint 1
 """
 
 from __future__ import annotations
@@ -597,7 +595,7 @@ def section_7_create_and_delete(
     groups: dict[str, int],
     assume_yes: bool = False,
 ) -> None:
-    section_header("Section 7 — Create + delete cycles (WRITES — Adam should be watching)")
+    section_header("Section 7 — Create + delete cycles (WRITES — run with someone watching)")
 
     system_keys = field_info.get("system_keys", [])
     issue_keys = field_info.get("issue_keys", [])

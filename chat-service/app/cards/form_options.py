@@ -2,8 +2,8 @@
 
 Single source of truth for the selection lists used by the dialog builder
 in app/cards/dialog.py. Keeping these here (rather than inline in the
-builder) means the vocabularies can be maintained in one place when the
-Freshservice admin (Adam) confirms the canonical values.
+builder) means the vocabularies can be maintained in one place as the
+Freshservice admin confirms the canonical values.
 
 NOTE on selection pre-fill: when Molli pre-fills a selection field, the
 value it supplies must match one of these strings EXACTLY (character for
@@ -221,8 +221,8 @@ SYSTEM_ITEMS: list[str] = [
 # (value stringified — selectionInput values are strings; cast back to int
 # when building the Freshservice payload.)
 #
-# Note: "IRIS " has a trailing space in the source data, preserved exactly.
-# Flag to Adam if unintended.
+# Note: "IRIS " has a trailing space in the source data, preserved exactly
+# in case the value is matched verbatim downstream.
 # ---------------------------------------------------------------------------
 GROUPS: list[dict[str, object]] = [
     {"id": 5000337271, "name": "IRIS "},
@@ -274,7 +274,8 @@ PRIORITIES: list[dict[str, object]] = [
 # HTML entities decoded (&amp; -> &) to match SYSTEM_ITEMS / what FS accepts.
 # NOTE: systems mapping to [] have no level-2 values in Freshservice; the
 #   More Detail dropdown will be empty for them. original_more_detail is a
-#   required str on MolliCustomFields -> needs a schema decision (see Vedant).
+#   required str on MolliCustomFields, so callers must supply a default
+#   (e.g. "Other") for systems with an empty options list.
 # ---------------------------------------------------------------------------
 MORE_DETAIL_BY_SYSTEM: dict[str, list[str]] = {
     "Computer/Laptop": [

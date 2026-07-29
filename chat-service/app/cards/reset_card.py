@@ -11,6 +11,12 @@ from typing import Any
 
 from app.cards.dialog import SERVICE_URL
 
+# Shown above the clear/keep buttons so the user knows why they're there.
+RESET_PROMPT_MESSAGE = (
+    "I've noticed the conversation has shifted to a new topic. Click below if "
+    "you'd like me to clear the older context for a more focused answer."
+)
+
 
 def reset_prompt_actions() -> list[dict[str, Any]]:
     """Return [clear-history, keep-history] button dicts."""

@@ -18,7 +18,7 @@ from collections import defaultdict
 from .base import Action, GuardrailVerdict
 
 # ---------------------------------------------------------------------------
-# Tier 3 — HR-specific escalation (emails Sally)
+# Tier 3 — HR-specific escalation
 # ---------------------------------------------------------------------------
 
 _HR_REQUEST_PATTERNS: list[str] = [
@@ -78,7 +78,7 @@ CANNED_RESPONSE_GRACEFUL_CLOSE = (
 )
 
 # ---------------------------------------------------------------------------
-# Repeat question tracker (in-memory — replace with persistent store)
+# Repeat question tracker (in-memory; not persisted across restarts)
 # ---------------------------------------------------------------------------
 
 _question_log: dict[str, list[str]] = defaultdict(list)
@@ -129,7 +129,7 @@ class EscalationGuardrail:
                 canned_response=CANNED_RESPONSE_GRACEFUL_CLOSE,
             )
 
-        # Tier 3 — explicit HR request (emails Sally)
+        # Tier 3 — explicit HR request
         if _is_hr_request(message):
             repeat_count = record_question(user_email, message)
             return GuardrailVerdict(

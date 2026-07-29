@@ -1,9 +1,10 @@
 """Guardrail layer.
 
-Six categories from the kickoff deck:
+Categories:
 - Mental health: detect distress, escalate to EAP, never give clinical advice
 - Fair Housing (FHA): refuse questions about tenant screening on protected classes
 - FCRA: no background check / credit guidance without HR authorization
+- HR / Legal: harassment, discrimination, retaliation disclosures
 - OSHA / Safety: urgent safety -> immediate escalation
 - Escalation: 3-tier (answer -> ticket -> human handoff)
 - Data Privacy: DLP-scan inputs, no PII in chat logs
@@ -40,8 +41,8 @@ class Guardrail(Protocol):
     async def check(self, message: str, user_email: str) -> GuardrailVerdict: ...
 
 
-# Concrete guardrails live in sibling modules:
-#   mental_health.py, fair_housing.py, fcra.py, osha.py, data_privacy.py
-# Each implements `Guardrail` and is added to GUARDRAIL_CHAIN below.
+# Concrete guardrails live in sibling modules (mental_health.py, fair_housing.py,
+# fcra.py, hr_legal.py, osha.py, data_priv.py, escalation.py). The runnable
+# chain and its priority order live in chain.py.
 
-GUARDRAIL_CHAIN: list[Guardrail] = []  # populated in Phase 2
+GUARDRAIL_CHAIN: list[Guardrail] = []

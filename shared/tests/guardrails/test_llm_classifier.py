@@ -1,10 +1,14 @@
 """Tests for FHAFCRAClassifier and _classify.
 
+This classifier is FHA-only: FCRA-flavored language (screening, background
+checks, adverse action, etc.) is classified NONE here and handled instead by
+the separate regex-based FCRAGuardrail — see test_fcra.py.
+
 Two layers:
   - Guardrail-class tests patch _classify with AsyncMock — no GCP calls,
     verify that the right verdict/category/canned_response comes back.
   - _classify unit tests patch get_settings + _call_gemini — exercise every
-    code path (FHA, FCRA, NONE, garbage response, exception, timeout,
+    code path (FHA, NONE, garbage response, exception, timeout,
     use_gemini=False, settings unavailable).
 """
 
@@ -57,21 +61,6 @@ async def test_guardrail_blocks_fha_topic():
 
 
 @pytest.mark.asyncio
-async def test_guardrail_blocks_fcra_topic():
-    with patch(
-        "molli_shared.guardrails.llm_classifier._classify",
-        new=AsyncMock(return_value="FCRA"),
-    ):
-        verdict = await classifier.check(
-            "what do we do if the report flags something questionable?", USER
-        )
-    assert verdict.action == Action.BLOCK
-    assert verdict.category == "FCRA"
-    assert verdict.canned_response is not None
-    assert "Fair Credit" in verdict.canned_response
-
-
-@pytest.mark.asyncio
 async def test_guardrail_allows_unrelated_topic():
     with patch(
         "molli_shared.guardrails.llm_classifier._classify",
@@ -107,7 +96,10 @@ async def test_classify_returns_fha():
 
 
 @pytest.mark.asyncio
-async def test_classify_returns_fcra():
+async def test_classify_normalises_fcra_response_to_none():
+    # The system prompt asks the model for FHA/NONE only; if it ever returns
+    # FCRA anyway (old prompt behavior, or model drift), _classify falls back
+    # to NONE since "FCRA" isn't in _VALID_TOPICS.
     with (
         patch(
             "molli_shared.guardrails.llm_classifier.get_settings",
@@ -120,7 +112,7 @@ async def test_classify_returns_fcra():
     ):
         assert (
             await _classify("how do we handle it when the report comes back clean?")
-            == "FCRA"
+            == "NONE"
         )
 
 

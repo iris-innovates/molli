@@ -38,9 +38,8 @@ you MUST remove the manual copy or retrieval will hold two competing versions:
 
     python -m sync_job.manual_ingest remove --slug <slug>
 
-Ownership note: this writes to the Vector Search index + chunk store, which are
-Kautilya's lane. Validate on molli-dev first; give Kautilya a heads-up before
-running against prod.
+This writes directly to the shared Vector Search index + chunk store. Validate
+on a dev project first before running against prod.
 """
 
 from __future__ import annotations
@@ -53,7 +52,7 @@ import time
 
 from google.cloud import firestore
 from molli_shared.chunk_store import ChunkStore, StoredChunk
-from molli_shared.config import get_settings
+from molli_shared.config import Settings, get_settings
 from molli_shared.retrieval import Embedder, IndexedChunk, VectorIndex
 from pypdf import PdfReader
 
@@ -173,7 +172,7 @@ def _skip_line(raw: str) -> bool:
         return True
     if _FOOTER.search(s):
         return True
-    return _TOC_LINE.match(s) and re.search(r"[A-Za-z]", s)
+    return bool(_TOC_LINE.match(s) and re.search(r"[A-Za-z]", s))
 
 
 def _looks_like_heading(line: str) -> bool:
@@ -269,7 +268,7 @@ def _chunk_text_by_section(text: str, max_chars: int = 1400) -> list[str]:
     return chunks
 
 
-def _make_index(settings) -> VectorIndex:
+def _make_index(settings: Settings) -> VectorIndex:
     return VectorIndex(
         project_id=settings.gcp_project_id,
         index_id=settings.vector_index_id,

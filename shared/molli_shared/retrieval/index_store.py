@@ -91,8 +91,7 @@ class VectorIndex:
             client_options={"api_endpoint": regional}
         )
         # Queries must hit the endpoint's public domain, NOT the regional host
-        # (regional host returns 501 for find_neighbors). Learned during the
-        # vector-search spike; see docs/runbook.md.
+        # (regional host returns 501 for find_neighbors).
         self._match_client = aiplatform_v1.MatchServiceClient(
             client_options={"api_endpoint": public_endpoint_domain}
         )
@@ -232,7 +231,7 @@ class VectorIndex:
             )
         return results
 
-    @vertex_retry
+    @vertex_retry  # type: ignore[untyped-decorator]
     def _find_neighbors(
         self, request: aiplatform_v1.FindNeighborsRequest
     ) -> aiplatform_v1.FindNeighborsResponse:

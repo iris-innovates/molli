@@ -15,10 +15,7 @@ The runner also handles:
 
 from __future__ import annotations
 
-import hashlib
-import logging
 from dataclasses import dataclass
-from datetime import UTC, datetime
 
 from .base import Action, Guardrail, GuardrailVerdict
 from .data_priv import DataPrivacyGuardrail, redact_pii
@@ -28,8 +25,6 @@ from .llm_classifier import FHAFCRAClassifier
 from .mental_health import MentalHealthGuardrail
 from .osha import OSHAGuardrail
 from .hr_legal import HRLegalGuardrail
-
-logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -41,32 +36,6 @@ class ChainResult:
     message_to_gemini: str | None  # redacted if REDACT action
     append_to_response: str | None  # OSHA Tier 2 referral suffix
     response_to_user: str | None  # canned response when not calling Gemini
-
-
-def _hash_user(user_email: str) -> str:
-    return hashlib.sha256(user_email.encode()).hexdigest()[:16]
-
-
-def _log_verdict(
-    verdict: GuardrailVerdict,
-    user_email: str,
-    space_id: str,
-    session_id: str,
-) -> None:
-    logger.info(
-        "guardrail_verdict",
-        extra={
-            "timestamp": datetime.now(UTC).isoformat(),
-            "user_id_hashed": _hash_user(user_email),
-            "space_id": space_id,
-            "session_id": session_id,
-            "trigger_category": verdict.category,
-            "action": verdict.action.value,
-            "reason": verdict.reason,
-            "canned_response_sent": verdict.canned_response is not None,
-            # raw message is NEVER logged
-        },
-    )
 
 
 # ---------------------------------------------------------------------------
@@ -100,7 +69,6 @@ async def run_chain(
 
     for guardrail in _GUARDRAIL_CHAIN:
         verdict = await guardrail.check(redacted_message, user_email)
-        _log_verdict(verdict, user_email, space_id, session_id)
 
         if verdict.action == Action.BLOCK:
             return ChainResult(
@@ -156,7 +124,6 @@ async def scan_gemini_output(
 ) -> tuple[str, GuardrailVerdict]:
     """Mode B — scan Gemini response for PII before returning to user."""
     verdict = await _DATA_PRIVACY_GUARDRAIL.check_output(response)
-    _log_verdict(verdict, user_email, space_id, session_id)
 
     if verdict.action == Action.REDACT:
         clean_response, _ = redact_pii(response)

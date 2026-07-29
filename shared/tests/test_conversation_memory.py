@@ -8,6 +8,7 @@ store + fail-closed placeholder, and follow-up rewrite behavior.
 
 from __future__ import annotations
 
+from typing import Any
 from unittest.mock import patch
 
 import pytest
@@ -33,11 +34,16 @@ class _FakeScanner:
 
     def scan(self, text: str) -> DLPResult:
         if self.skip:
-            return DLPResult(original_text=text, redacted_text=text,
-                             scan_skipped=True, skip_reason="simulated outage")
+            return DLPResult(
+                original_text=text,
+                redacted_text=text,
+                scan_skipped=True,
+                skip_reason="simulated outage",
+            )
         redacted = text.replace("SECRET", "[REDACTED]")
-        return DLPResult(original_text=text, redacted_text=redacted,
-                         has_pii=(redacted != text))
+        return DLPResult(
+            original_text=text, redacted_text=redacted, has_pii=(redacted != text)
+        )
 
 
 class _FakeDoc:
@@ -85,7 +91,7 @@ class _FakeFirestore:
     """Minimal in-memory Firestore double supporting the store's usage."""
 
     def __init__(self):
-        self._data: dict[str, dict] = {}
+        self._data: dict[str, dict[str, Any]] = {}
 
     def collection(self, name):
         return _FakeCollection(self)
@@ -113,6 +119,7 @@ def _patch_transactional():
     def _passthrough(fn):
         def wrapper(txn):
             return fn(txn)
+
         return wrapper
 
     with patch.object(cs.firestore, "transactional", _passthrough):

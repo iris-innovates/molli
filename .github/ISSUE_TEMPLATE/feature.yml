@@ -15,7 +15,7 @@ body:
     id: why
     attributes:
       label: Why
-      description: Why does this matter? Tie to a metric, guardrail, or user need from the kickoff deck if possible.
+      description: Why does this matter? Tie to a metric, guardrail, or user need if possible.
     validations:
       required: true
   - type: textarea

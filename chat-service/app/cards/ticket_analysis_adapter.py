@@ -28,8 +28,8 @@ from app.cards.form_options import LOCATIONS, SYSTEM_ITEMS, more_detail_options
 _GROUP_LABEL_TO_ID: dict[str, int | None] = {
     "IT": 5000233136,
     "Ops": 5000233137,
-    "HR": None,  # Preiss has no HR group in Freshservice — HR routes via
-    # Gmail escalation to Sally, not a ticket group. Stays None.
+    "HR": None,  # Preiss has no HR group in Freshservice; HR escalations are
+    # handled outside the ticketing system, so this stays None.
     "general": None,
 }
 

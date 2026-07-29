@@ -2,7 +2,7 @@
 
 Blocks any guidance on background checks, credit reports, adverse action,
 or consumer report interpretation without verified HR authorization.
-All triggers are flagged for Sally Sousa's weekly review.
+All triggers are flagged for HR's weekly review.
 
 Action: BLOCK — return FCRA canned response.
 """

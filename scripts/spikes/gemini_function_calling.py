@@ -30,7 +30,7 @@ from vertexai.generative_models import (
 )
 
 # ---------------------------------------------------------------------------
-# Configuration — swap PROJECT_ID for molli-dev once Sidney provisions it
+# Configuration
 # ---------------------------------------------------------------------------
 PROJECT_ID = "molli-dev"  # or your personal GCP project ID
 LOCATION = "us-central1"
@@ -83,8 +83,8 @@ def search_knowledge_base(query: str) -> list[dict]:
     """
     Fake implementation of the search_knowledge_base tool.
 
-    In Phase 2 this will call Vertex AI Vector Search (or pgvector) with
-    the same signature. For now it does keyword matching against FAKE_KB.
+    A real implementation would call Vertex AI Vector Search (or pgvector)
+    with the same signature. For now it does keyword matching against FAKE_KB.
 
     Args:
         query: The user's question or search terms.

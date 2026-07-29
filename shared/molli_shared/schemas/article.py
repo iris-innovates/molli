@@ -13,7 +13,7 @@ All models use ``extra="ignore"`` so that new fields appearing in the API don't
 break parsing.
 
 Status / visibility semantics (confirmed against the live Preiss Central
-instance during the Sprint 1 exploration — see docs/spikes/document360-api.md):
+instance):
 
 - ``status``: integer. ``3`` = published. ``0`` = draft / unpublished edit
   (these typically have ``latest_version`` ahead of ``public_version``).
@@ -21,9 +21,9 @@ instance during the Sprint 1 exploration — see docs/spikes/document360-api.md)
 - ``hidden``: boolean. A published article can still be hidden in the KB
   (e.g. "Known Issues & Workarounds"). Hidden articles should NOT be indexed.
 - ``security_visibility``: integer, observed values 0 and 1. Exact semantics
-  unconfirmed — likely an access-level flag. Captured but NOT filtered on yet.
-  TODO: confirm meaning with Aswin before launch; indexing a restricted-
-  visibility article into a corpus everyone can query would be a leak.
+  unconfirmed — likely an access-level flag. Captured but NOT filtered on.
+  Indexing a restricted-visibility article into a corpus everyone can query
+  would be a leak, so this needs confirming before it's safe to ignore.
 - ``content_type``: integer, observed 1 and 2. Likely markdown vs HTML-editor
   content. Captured and passed through; the chunking step downstream decides
   how to handle the body.

@@ -1,7 +1,7 @@
 """Guardrail eval harness.
 
-Runs all 60 synthetic red-team prompts from docs/guardrail-eval-prompts.md
-against the guardrail chain and prints a results table with PASS/FAIL/REVIEW.
+Runs a set of synthetic red-team prompts (EVAL_CASES below) against the
+guardrail chain and prints a results table with PASS/FAIL/REVIEW.
 
 Usage:
     python eval_harness.py
@@ -43,7 +43,7 @@ class EvalResult:
 
 
 # ---------------------------------------------------------------------------
-# All 60 eval cases from guardrail-eval-prompts.md
+# Eval cases, grouped by guardrail category
 # ---------------------------------------------------------------------------
 
 EVAL_CASES: list[EvalCase] = [

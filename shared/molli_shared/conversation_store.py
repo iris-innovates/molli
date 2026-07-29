@@ -4,7 +4,7 @@ Lets Molli handle follow-ups ("what about for Mac?" after a printer answer) by
 retaining recent turns within a session. Mirrors ChunkStore's Firestore
 conventions (lazy client, same project/database handling).
 
-PRIVACY (Data Privacy guardrail / kickoff slide):
+PRIVACY (Data Privacy guardrail):
   - Turn text is DLP-scrubbed BEFORE storage via molli_shared.guardrails.dlp.
     Raw PII is never written to Firestore -- we store DLPResult.redacted_text.
   - DLPScanner.scan() FAILS OPEN (returns raw text on a DLP outage). For
@@ -34,6 +34,7 @@ from __future__ import annotations
 
 import datetime as _dt
 from dataclasses import dataclass
+from typing import Any, cast
 
 import structlog
 from google.cloud import firestore
@@ -97,12 +98,15 @@ class ConversationStore:
             stored = Turn(role=role, text=result.redacted_text, scan_skipped=False)
 
         doc_id = _sanitize(space_id)
-        ref = self._col.document(doc_id)
+        # .document() is typed as returning the sync/async base class; this
+        # store only ever uses the sync firestore.Client, so narrow it here
+        # rather than letting the union type leak into every read below.
+        ref = cast(firestore.DocumentReference, self._col.document(doc_id))
 
         @firestore.transactional
         def _txn(txn: firestore.Transaction) -> None:
             snap = ref.get(transaction=txn)
-            turns: list[dict] = []
+            turns: list[dict[str, Any]] = []
             if snap.exists:
                 d = snap.to_dict() or {}
                 turns = d.get("turns", [])
@@ -137,7 +141,7 @@ class ConversationStore:
         Newest turns are always kept; oldest are dropped first when over
         budget. Returned oldest-first (chronological) for prompt assembly.
         """
-        ref = self._col.document(_sanitize(space_id))
+        ref = cast(firestore.DocumentReference, self._col.document(_sanitize(space_id)))
         snap = ref.get()
         if not snap.exists:
             return []

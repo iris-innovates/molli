@@ -5,8 +5,9 @@ Verifies the step-4 pre-fill flow against the three factory drafts:
 - partial: dropped fields (subject, location) render empty
 - empty:   the dialog degrades to the same blank form as the manual path
 
-These run entirely against factory drafts — no Kautilya code, no Firestore.
-When the real source lands, open_dialog() is unchanged, so these stay valid.
+These run entirely against factory drafts — no Firestore. If the draft ever
+comes from a real upstream source instead of the factory, open_dialog() is
+unchanged, so these stay valid.
 """
 
 from __future__ import annotations

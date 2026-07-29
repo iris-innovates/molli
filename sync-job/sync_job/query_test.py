@@ -1,7 +1,7 @@
 """Query the live index with a real question and print the matching chunks.
 
-Run AFTER a sync has populated the index. Verifies exit criterion #5:
-"a test query against the index returns relevant chunks for a known topic."
+Run AFTER a sync has populated the index, to sanity-check that a test query
+against the index returns relevant chunks for a known topic.
 
     uv run python -m sync_job.query_test "how do I reset my password"
 """

@@ -40,9 +40,9 @@ LOW_CONFIDENCE = 0.5
 
 VALID_INTENTS = {"HR", "IT", "Ops", "general"}
 
-# NOTE: Ticket-category routing is intentionally NOT defined here. Freshservice
+# Ticket-category routing is intentionally NOT defined here. Freshservice
 # group routing already lives in chat-service/app/cards/structured_requests.py,
-# where each RequestSpec carries a real, Adam-confirmed group_id. Duplicating a
+# where each RequestSpec carries a real, confirmed group_id. Duplicating a
 # department->group map here would invite drift. The classifier returns intent +
 # confidence only; routing consumers map intent to a group at the routing layer.
 
@@ -162,12 +162,10 @@ async def classify_intent(message: str) -> IntentResult:
             timeout=_CLASSIFY_TIMEOUT,
         )
     except asyncio.TimeoutError:
-        log.warning("intent_classifier_timeout", text_len=len(message))
         return _FALLBACK
     except Exception as exc:  # noqa: BLE001
         log.error("intent_classifier_error", error=str(exc))
         return _FALLBACK
 
     result = _parse(raw)
-    log.info("intent_classified", intent=result.intent, confidence=result.confidence)
     return result

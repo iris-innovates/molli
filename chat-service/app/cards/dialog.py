@@ -1,6 +1,6 @@
-"""Card and dialog builders for the dialogtest flow.
+"""Card and dialog builders for the ticket-intake dialog flow.
 
-Bare-bones dialog spike: trigger card -> open dialog -> submit -> notify.
+Flow: trigger card -> open dialog -> submit -> notify.
 Plain-message responses use the chatDataAction envelope (see _chat_reply in
 main.py); dialog open/submit responses use the renderActions envelope.
 """
@@ -311,12 +311,10 @@ def open_dialog(draft: TicketDraft) -> dict[str, Any]:
 def submit_notification(ticket: str) -> dict[str, Any]:
     """Response to submitNameDialog: confirm via notification.
 
-    The notification is the confirmed-correct Add-On submit response
-    (per SubmitFormResponse docs). The explicit dialog-close instruction
-    (standalone-Chat docs call it EndNavigation -> CLOSE_DIALOG) may differ
-    in the Add-On envelope. TODO: verify against a real submit event log
-    whether the notification alone dismisses the modal; if not, add the
-    Add-On close instruction here.
+    The notification is the confirmed-correct Add-On submit response (per
+    SubmitFormResponse docs). The explicit dialog-close instruction is
+    included defensively since Add-On envelope behavior for EndNavigation ->
+    CLOSE_DIALOG may differ from the standalone-Chat docs.
     """
     return {
         "action": {

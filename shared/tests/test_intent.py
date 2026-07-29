@@ -26,7 +26,9 @@ def _mock_reply(intent_label: str, confidence: float) -> str:
     [("IT", 0.95), ("HR", 0.9), ("Ops", 0.92), ("general", 0.3)],
 )
 async def test_each_department(label, confidence):
-    with patch.object(intent, "_call_gemini", return_value=_mock_reply(label, confidence)):
+    with patch.object(
+        intent, "_call_gemini", return_value=_mock_reply(label, confidence)
+    ):
         with patch.object(intent, "get_settings") as gs:
             gs.return_value.use_gemini = True
             gs.return_value.gcp_project_id = "p"
@@ -93,7 +95,9 @@ async def test_malformed_json_fails_open_to_general():
 
 @pytest.mark.asyncio
 async def test_invalid_intent_value_fails_open():
-    with patch.object(intent, "_call_gemini", return_value=_mock_reply("Marketing", 0.9)):
+    with patch.object(
+        intent, "_call_gemini", return_value=_mock_reply("Marketing", 0.9)
+    ):
         with patch.object(intent, "get_settings") as gs:
             gs.return_value.use_gemini = True
             gs.return_value.gcp_project_id = "p"

@@ -1,12 +1,10 @@
 """
-RAG retrieval-quality check (Phase 1 de-risking spike).
+RAG retrieval-quality check.
 
 Runs known employee questions — the top D360 article needs from the ticket
 audit — through the live retrieval path (embed_query -> Vector Search) and
 prints top-k chunks per question, so a human can eyeball whether the right
-article surfaces. Judgment-call spike, not an automated eval.
-
-Record hit / miss / partial verdicts in docs/spikes/rag-retrieval-check.md.
+article surfaces. A manual judgment-call check, not an automated eval.
 
 Run from the sync-job directory:
     uv run python -m sync_job.rag_retrieval_check

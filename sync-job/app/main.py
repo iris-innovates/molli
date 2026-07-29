@@ -1,6 +1,7 @@
-"""Daily sync job: Document360 -> chunk -> embed -> Vector Search.
+"""Unused entrypoint stub — superseded by sync_job/main.py.
 
-Phase 0 scaffold: structure exists, real logic in Phase 1.
+The real sync pipeline (Document360 -> chunk -> embed -> Vector Search) is
+implemented in sync_job/main.py, which is what the Dockerfile actually runs.
 """
 
 from __future__ import annotations
@@ -14,13 +15,6 @@ log = structlog.get_logger()
 
 def main() -> int:
     log.info("sync_job_started")
-    # Phase 1:
-    # 1. Read last_run timestamp from Firestore
-    # 2. Fetch articles from Document360 modified since last_run
-    # 3. Chunk articles (heading-aware, ~500-1000 tokens, ~100 overlap)
-    # 4. Embed chunks with text-embedding-005
-    # 5. Upsert to Vertex AI Vector Search with metadata
-    # 6. Update last_run timestamp
     log.info("sync_job_completed", articles_processed=0, chunks_upserted=0)
     return 0
 

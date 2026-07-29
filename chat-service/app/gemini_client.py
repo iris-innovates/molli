@@ -2,8 +2,8 @@
 
 Wraps the Vertex AI GenerativeModel in a single ask() call: user text in,
 model text out. No tools, no RAG, no D360 retrieval — that's downstream work.
-Auth is application-default credentials via vertexai.init(), same as the
-Sprint 1 function-calling spike; no new secrets required.
+Auth is application-default credentials via vertexai.init(); no new secrets
+required.
 """
 
 from __future__ import annotations
@@ -16,7 +16,7 @@ from vertexai.generative_models import GenerationConfig, GenerationResponse, Gen
 
 log = structlog.get_logger()
 
-# Short system prompt for the demo. Full guardrail prompts are Phase 4 work.
+# Short general-purpose system prompt, used only when RAG has no context.
 # The "say so if you don't know" line is deliberate — it reduces confident
 # hallucination about internal Preiss policy while we have no grounding yet.
 SYSTEM_INSTRUCTION = (
@@ -56,7 +56,7 @@ def _get_model() -> GenerativeModel:
     return _model
 
 
-@vertex_retry
+@vertex_retry  # type: ignore[untyped-decorator]
 def _generate(model: GenerativeModel, prompt: str, temperature: float) -> GenerationResponse:
     return model.generate_content(
         prompt, generation_config=GenerationConfig(temperature=temperature)

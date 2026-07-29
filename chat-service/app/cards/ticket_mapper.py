@@ -11,16 +11,16 @@ Pure logic, no I/O — easy to unit test. Validation comes for free: building
 out-of-range enum, empty required field, etc.
 
 Constants injected here (not collected from the user):
-    original_more_detail = "Other"   (confirmed valid value with Adam)
+    original_more_detail = "Other"   (confirmed valid value in Freshservice)
     source = 4                        (Chat — Molli's universal source)
     type  = "Incident"
     status defaults to 2 (Open) if not supplied.
 
 NOTE: the Molli traceability custom fields (molli_conversation_id,
 molli_confidence_score, molli_escalation_reason) are intentionally NOT set
-here. They require provisioning in Freshservice by Adam first; sending an
-unknown custom_fields key returns a 400. Leaving them unset means
-exclude_none=True strips them at serialization time.
+here. They require provisioning in Freshservice first; sending an unknown
+custom_fields key returns a 400. Leaving them unset means exclude_none=True
+strips them at serialization time.
 """
 
 from __future__ import annotations
