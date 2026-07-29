@@ -27,7 +27,7 @@ _HARASSMENT_PATTERNS: list[str] = [
     r"\bharassing (me|us|staff|employees)\b",
     r"\bbeing harassed\b",
     r"\bunwanted (advances|touching|contact|comments)\b",
-    r"\bmade me (feel )?uncomfortable\b",
+    r"\b(made|making) me (feel )?uncomfortable\b",
     r"\btouched me (inappropriately|without permission)\b",
     r"\bsaid something (inappropriate|offensive|sexual)\b",
     r"\bcreating a hostile (work )?(environment|workplace)\b",
