@@ -145,6 +145,7 @@ class VectorIndex:
                 )
         return upserted
 
+    @vertex_retry  # type: ignore[untyped-decorator]
     def _upsert_datapoints(
         self, datapoints: list[aiplatform_v1.IndexDatapoint]
     ) -> None:
