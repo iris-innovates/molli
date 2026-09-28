@@ -17,4 +17,4 @@ ENV PATH="/app/.venv/bin:$PATH"
 ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app/sync-job
-CMD ["python", "-m", "app.main"]
+CMD ["python", "-m", "sync_job.main"]
